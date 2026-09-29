@@ -8,6 +8,7 @@ function strip(html: string) {
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/<(script|style|nav|footer|header)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]+>/g, " ")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&#8217;|&rsquo;/g, "'")
