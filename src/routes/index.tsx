@@ -136,7 +136,16 @@ function Index() {
             </div>
             <div className="relative aspect-square bg-muted">
               {image ? (
-                <img src={image} alt={post?.title ?? "Generated post image"} className="h-full w-full object-cover" />
+                <>
+                  <img src={image} alt={post?.title ?? "Generated post image"} className="h-full w-full object-cover" />
+                  {post && (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-5 pb-5 pt-24">
+                      <p className="font-display text-3xl font-bold uppercase leading-tight tracking-wide text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] md:text-4xl">
+                        {post.title}
+                      </p>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   {busy ? "Generating…" : "Your image will appear here"}
@@ -145,7 +154,6 @@ function Index() {
             </div>
             {post && (
               <div className="space-y-3 p-4 text-sm">
-                <p className="font-display text-xl leading-snug">{post.title}</p>
                 <p className="whitespace-pre-line">{post.caption}</p>
                 <p className="text-primary">{post.hashtags.map((h) => "#" + h).join(" ")}</p>
                 <div className="flex flex-wrap gap-2 pt-2">
