@@ -65,7 +65,7 @@ export type Post = { title: string; caption: string; hashtags: string[]; imagePr
 export const generatePost = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ input: z.string().min(10).max(20000) }).parse(d))
   .handler(async ({ data }): Promise<Post> => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env['LOVABLE_API_KEY'];
     if (!key) throw new Error("AI is not configured.");
     const text = await articleText(data.input);
     const res = await fetch(`${GW}/v1/responses`, {
@@ -119,7 +119,7 @@ export const generatePost = createServerFn({ method: "POST" })
 export const generateImage = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ prompt: z.string().min(5).max(4000) }).parse(d))
   .handler(async ({ data }) => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env['LOVABLE_API_KEY'];
     if (!key) throw new Error("AI is not configured.");
     const res = await fetch(`${GW}/v1/images/generations`, {
       method: "POST",
