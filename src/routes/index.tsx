@@ -139,8 +139,10 @@ function Index() {
                 <>
                   <img src={image} alt={post?.title ?? "Generated post image"} className="h-full w-full object-cover" />
                   {post && (
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-4 pt-16">
-                      <p className="font-display text-2xl leading-snug text-white drop-shadow-md">{post.title}</p>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-5 pb-5 pt-24">
+                      <p className="font-display text-3xl font-bold uppercase leading-tight tracking-wide text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] md:text-4xl">
+                        {post.title}
+                      </p>
                     </div>
                   )}
                 </>
