@@ -129,59 +129,67 @@ function Index() {
         </section>
 
         <aside className="lg:sticky lg:top-6 lg:h-fit">
-          <div className="overflow-hidden rounded-xl border border-border bg-card">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <div className="relative overflow-hidden rounded-xl border border-border bg-card">
+            {image && (
+              <div className="absolute inset-0" aria-hidden="true">
+                <img
+                  src={image}
+                  alt=""
+                  className="h-full w-full scale-105 object-cover opacity-25 blur-[3px]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/70 to-background" />
+              </div>
+            )}
+            <div className="relative flex items-center gap-2 border-b border-border/60 px-4 py-3">
               <div className="h-7 w-7 rounded-full bg-primary" />
               <span className="text-sm font-medium">your_astro_account</span>
             </div>
-            <div className="relative aspect-square bg-muted">
-              {image ? (
+            <div className="relative p-6">
+              {post ? (
                 <>
-                  <img src={image} alt={post?.title ?? "Generated post image"} className="h-full w-full object-cover" />
-                  {post && (
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-5 pb-5 pt-24">
-                      <p className="font-display text-3xl font-bold uppercase leading-tight tracking-wide text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] md:text-4xl">
-                        {post.title}
-                      </p>
-                    </div>
-                  )}
+                  <h3 className="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] md:text-5xl">
+                    {post.title}
+                  </h3>
+                  <div className="mt-3 h-1 w-14 rounded-full bg-primary" />
+                  <p className="mt-4 text-base leading-relaxed">{post.caption}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-primary">
+                    {post.hashtags.map((h) => "#" + h).join(" ")}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-border/60 pt-4">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(full);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1500);
+                      }}
+                      className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                    >
+                      {copied ? "Copied!" : "Copy caption"}
+                    </button>
+                    {image && (
+                      <a
+                        href={image}
+                        download="starpost.png"
+                        className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
+                      >
+                        Download image
+                      </a>
+                    )}
+                    <button
+                      disabled={!!busy}
+                      onClick={() => makeImage(post.imagePrompt)}
+                      className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
+                    >
+                      New image
+                    </button>
+                  </div>
                 </>
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  {busy ? "Generating…" : "Your image will appear here"}
+                <div className="flex min-h-64 items-center justify-center text-sm text-muted-foreground">
+                  {busy ? "Generating…" : "Your post will appear here"}
                 </div>
               )}
             </div>
-            {post && (
-              <div className="space-y-3 p-4 text-sm">
-                <p className="whitespace-pre-line">{post.caption}</p>
-                <p className="text-primary">{post.hashtags.map((h) => "#" + h).join(" ")}</p>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(full);
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 1500);
-                    }}
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
-                  >
-                    {copied ? "Copied!" : "Copy caption"}
-                  </button>
-                  {image && (
-                    <a href={image} download="starpost.png" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent">
-                      Download image
-                    </a>
-                  )}
-                  <button
-                    disabled={!!busy}
-                    onClick={() => makeImage(post.imagePrompt)}
-                    className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
-                  >
-                    New image
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </aside>
       </main>
