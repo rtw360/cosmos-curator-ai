@@ -53,7 +53,10 @@ export const getNews = createServerFn({ method: "GET" }).handler(async () => {
     }),
   );
   const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  all.sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
+  all.sort((a, b) => {
+    const rank = (s: string) => (s === "NASA" ? 0 : s === "ESA" ? 1 : 2);
+    return rank(a.source) - rank(b.source) || (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0);
+  });
   return all.slice(0, 20);
 });
 
