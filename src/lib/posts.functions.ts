@@ -23,8 +23,8 @@ const FEEDS = [
   { source: "Space.com", url: "https://www.space.com/feeds/all" },
   { source: "ESA", url: "https://www.esa.int/rssfeed/Our_Activities/Space_Science" },
   { source: "Harvard", url: "https://news.harvard.edu/gazette/feed/" },
-  { source: "MIT", url: "https://news.mit.edu/topic/mitastronomy-rss.xml" },
-  { source: "UC Berkeley", url: "https://news.berkeley.edu/topics/science/feed" },
+  { source: "MIT", url: "https://news.mit.edu/topic/mitphysics-rss.xml" },
+  { source: "UC Berkeley", url: "https://news.berkeley.edu/feed/" },
 ];
 
 export type NewsItem = { title: string; link: string; summary: string; source: string; date: string };
