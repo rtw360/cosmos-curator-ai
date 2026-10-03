@@ -25,6 +25,9 @@ const FEEDS = [
   { source: "Harvard", url: "https://news.harvard.edu/gazette/feed/" },
   { source: "MIT", url: "https://news.mit.edu/topic/mitphysics-rss.xml" },
   { source: "UC Berkeley", url: "https://news.berkeley.edu/feed/" },
+  { source: "Caltech", url: "https://feeds.feedburner.com/CaltechNews" },
+  { source: "UW", url: "https://www.washington.edu/news/feed/" },
+  { source: "Illinois", url: "https://news.illinois.edu/rss" },
 ];
 
 export type NewsItem = { title: string; link: string; summary: string; source: string; date: string };
@@ -35,21 +38,25 @@ export const getNews = createServerFn({ method: "GET" }).handler(async () => {
       const res = await fetch(f.url, { headers: { "User-Agent": "Mozilla/5.0 StarPostBot" } });
       if (!res.ok) return [];
       const xml = await res.text();
-      const items = xml.match(/<item[\s\S]*?<\/item>/g) ?? [];
+      const items = xml.match(/<(item|entry)[\s\S]*?<\/\1>/g) ?? [];
       return items.slice(0, 8).map((it): NewsItem => {
         const get = (tag: string) => it.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`))?.[1] ?? "";
+        const link = get("link") || it.match(/<link[^>]*href="([^"]+)"/)?.[1] || "";
         return {
           title: strip(get("title")),
-          link: strip(get("link")),
-          summary: strip(get("description")).slice(0, 400),
+          link: strip(link),
+          summary: strip(get("description") || get("summary") || get("content")).slice(0, 400),
           source: f.source,
-          date: strip(get("pubDate")),
+          date: strip(get("pubDate") || get("published") || get("updated")),
         };
       });
     }),
   );
   const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-  all.sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
+  all.sort((a, b) => {
+    const rank = (s: string) => (s === "NASA" ? 0 : s === "ESA" ? 1 : 2);
+    return rank(a.source) - rank(b.source) || (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0);
+  });
   return all.slice(0, 20);
 });
 
