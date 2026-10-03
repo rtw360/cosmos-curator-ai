@@ -22,6 +22,9 @@ const FEEDS = [
   { source: "NASA", url: "https://www.nasa.gov/news-release/feed/" },
   { source: "Space.com", url: "https://www.space.com/feeds/all" },
   { source: "ESA", url: "https://www.esa.int/rssfeed/Our_Activities/Space_Science" },
+  { source: "Harvard", url: "https://news.harvard.edu/gazette/feed/" },
+  { source: "MIT", url: "https://news.mit.edu/topic/mitastronomy-rss.xml" },
+  { source: "UC Berkeley", url: "https://news.berkeley.edu/topics/science/feed" },
 ];
 
 export type NewsItem = { title: string; link: string; summary: string; source: string; date: string };
@@ -76,7 +79,7 @@ export const generatePost = createServerFn({ method: "POST" })
       body: JSON.stringify({
         model: "openai/gpt-6-astra",
         instructions:
-          "You are a social media editor for an astronomy Instagram account that speaks to teenagers. From the article, write: an intriguing title (70-90 chars, exactly one emoji) that lands cool and confident with teenagers — curious, clever, a little mysterious, like an insider observation or a hook that makes them think 'wait, what?' — never corny, no hype buzzwords like 'vibes', 'epic', 'mind-blowing' or over-the-top excitement; an Instagram caption of 80-110 words in a casual, teen-friendly tone that hooks in the first line, explains the science accurately but conversationally, uses short paragraphs separated by blank lines, a few tasteful emojis, and ends with a question or call to action; 15-25 relevant hashtags (without #, mixing broad and niche); and a prompt for an atmospheric background image that matches the story's mood or vibe (cinematic, ambient, it should feel like the story's atmosphere rather than illustrating the facts literally, no text in the image).",
+          "You are a social media editor for an astronomy Instagram account that speaks to teenagers. From the article, write: a catchy, intriguing title (45-65 characters, no emoji) that lands cool and confident with teenagers — clever, curious, a little mysterious, like an insider observation or a hook that makes them think 'wait, what?' — never corny, no hype buzzwords like 'vibes', 'epic', 'mind-blowing', and no awkward filler; an Instagram caption of 80-110 words in a casual, teen-friendly tone that hooks in the first line, explains the science accurately but conversationally, uses short paragraphs separated by blank lines, a few tasteful emojis, and ends with a question or call to action; 15-25 relevant hashtags (without #, mixing broad and niche); and a prompt for an atmospheric background image that matches the story's mood or vibe (cinematic, ambient, it should feel like the story's atmosphere rather than illustrating the facts literally, no text in the image).",
         input: text,
         text: {
           format: {
