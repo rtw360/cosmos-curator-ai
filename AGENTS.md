@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Compose downloadable post artwork in the browser so the saved PNG matches the title-over-image preview without storing generated files.
