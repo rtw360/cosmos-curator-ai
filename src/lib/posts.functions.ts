@@ -128,6 +128,38 @@ export const generatePost = createServerFn({ method: "POST" })
     return post;
   });
 
+export const regenerateTitle = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ title: z.string(), caption: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const key = process.env['LOVABLE_API_KEY'];
+    if (!key) throw new Error("AI is not configured.");
+    const res = await fetch(`${GW}/v1/responses`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "openai/gpt-6-astra",
+        instructions:
+          "You are a social media editor for an astronomy Instagram account that speaks to teenagers. Given the current title and caption, write ONE alternative title (45-65 characters, no emoji) that is clearly different from the current one — cool, confident, curious, a little mysterious, like an insider observation or a hook that makes teens think 'wait, what?' — never corny, no hype buzzwords like 'vibes', 'epic', 'mind-blowing', no awkward filler. Output only the title text, nothing else.",
+        input: `Current title: ${data.title}\n\nCaption: ${data.caption}`,
+      }),
+    });
+    if (!res.ok) {
+      if (res.status === 429) throw new Error("Too many requests right now — please wait a moment.");
+      if (res.status === 402) throw new Error("Out of AI credits. Add credits in workspace settings.");
+      throw new Error(`AI request failed (${res.status})`);
+    }
+    const json = await res.json();
+    const out =
+      json.output_text ??
+      json.output
+        ?.flatMap((o: any) => o.content ?? [])
+        .filter((c: any) => c.type === "output_text")
+        .map((c: any) => c.text)
+        .join("");
+    if (!out) throw new Error("The AI returned no title.");
+    return { title: out.trim().replace(/^["']|["']$/g, "") };
+  });
+
 export const generateImage = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ prompt: z.string().min(5).max(4000) }).parse(d))
   .handler(async ({ data }) => {

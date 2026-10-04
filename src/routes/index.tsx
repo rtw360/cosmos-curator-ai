@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getNews, generatePost, generateImage, type Post } from "@/lib/posts.functions";
+import { getNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,12 +22,13 @@ function Index() {
   const fetchNews = useServerFn(getNews);
   const genPost = useServerFn(generatePost);
   const genImage = useServerFn(generateImage);
+  const regenTitle = useServerFn(regenerateTitle);
   const news = useQuery({ queryKey: ["news"], queryFn: () => fetchNews(), staleTime: 600_000 });
 
   const [input, setInput] = useState("");
   const [post, setPost] = useState<Post | null>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"text" | "image" | null>(null);
+  const [busy, setBusy] = useState<"text" | "image" | "title" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -36,6 +37,20 @@ function Index() {
     try {
       const r = await genImage({ data: { prompt } });
       setImage(r.url);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function makeTitle() {
+    if (!post) return;
+    setBusy("title");
+    setError(null);
+    try {
+      const r = await regenTitle({ data: { title: post.title, caption: post.caption } });
+      setPost({ ...post, title: r.title });
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -182,6 +197,13 @@ function Index() {
                       Download image
                     </a>
                   )}
+                  <button
+                    disabled={!!busy}
+                    onClick={makeTitle}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
+                  >
+                    {busy === "title" ? "Rewriting…" : "New title"}
+                  </button>
                   <button
                     disabled={!!busy}
                     onClick={() => makeImage(post.imagePrompt)}
