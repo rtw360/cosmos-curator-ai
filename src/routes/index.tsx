@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getNews, generatePost, generateImage, type Post } from "@/lib/posts.functions";
+import { getNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,7 +27,7 @@ function Index() {
   const [input, setInput] = useState("");
   const [post, setPost] = useState<Post | null>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"text" | "image" | null>(null);
+  const [busy, setBusy] = useState<"text" | "image" | "title" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
