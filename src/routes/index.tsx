@@ -4,6 +4,39 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { getNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
 
+const DOWNLOAD_WIDTH = 1080;
+const DOWNLOAD_HEIGHT = 1350;
+
+async function loadDownloadImage(src: string) {
+  const response = await fetch(src);
+  if (!response.ok) throw new Error("Couldn't prepare the image for download.");
+  const objectUrl = URL.createObjectURL(await response.blob());
+  const loaded = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const element = new Image();
+    element.onload = () => resolve(element);
+    element.onerror = () => reject(new Error("Couldn't prepare the image for download."));
+    element.src = objectUrl;
+  });
+  return { loaded, objectUrl };
+}
+
+function wrapTitle(context: CanvasRenderingContext2D, title: string, maxWidth: number) {
+  const words = title.toUpperCase().split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (line && context.measureText(candidate).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = candidate;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -28,7 +61,7 @@ function Index() {
   const [input, setInput] = useState("");
   const [post, setPost] = useState<Post | null>(null);
   const [image, setImage] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"text" | "image" | "title" | null>(null);
+  const [busy, setBusy] = useState<"text" | "image" | "title" | "download" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -70,6 +103,73 @@ function Index() {
       await makeImage(p.imagePrompt);
     } catch (e) {
       setError((e as Error).message);
+      setBusy(null);
+    }
+  }
+
+  async function downloadImage() {
+    if (!image || !post) return;
+    setBusy("download");
+    setError(null);
+    let objectUrl: string | null = null;
+    try {
+      await document.fonts.ready;
+      const source = await loadDownloadImage(image);
+      objectUrl = source.objectUrl;
+      const canvas = document.createElement("canvas");
+      canvas.width = DOWNLOAD_WIDTH;
+      canvas.height = DOWNLOAD_HEIGHT;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Your browser couldn't create the download.");
+
+      const scale = Math.max(DOWNLOAD_WIDTH / source.loaded.width, DOWNLOAD_HEIGHT / source.loaded.height);
+      const width = source.loaded.width * scale;
+      const height = source.loaded.height * scale;
+      context.drawImage(source.loaded, (DOWNLOAD_WIDTH - width) / 2, (DOWNLOAD_HEIGHT - height) / 2, width, height);
+
+      const fade = context.createLinearGradient(0, DOWNLOAD_HEIGHT * 0.35, 0, DOWNLOAD_HEIGHT);
+      fade.addColorStop(0, "transparent");
+      fade.addColorStop(0.55, "oklch(0.14 0.03 270 / 0.35)");
+      fade.addColorStop(1, "oklch(0.14 0.03 270 / 0.96)");
+      context.fillStyle = fade;
+      context.fillRect(0, 0, DOWNLOAD_WIDTH, DOWNLOAD_HEIGHT);
+
+      const horizontalPadding = 72;
+      const maxWidth = DOWNLOAD_WIDTH - horizontalPadding * 2;
+      let fontSize = 112;
+      let lines: string[] = [];
+      do {
+        context.font = `700 ${fontSize}px "Instrument Serif", Georgia, serif`;
+        lines = wrapTitle(context, post.title, maxWidth);
+        if (lines.length <= 4) break;
+        fontSize -= 6;
+      } while (fontSize >= 76);
+
+      const lineHeight = fontSize * 0.92;
+      const blockHeight = lines.length * lineHeight;
+      let y = DOWNLOAD_HEIGHT - 82 - blockHeight + lineHeight;
+      context.fillStyle = "oklch(0.95 0.01 90)";
+      context.shadowColor = "oklch(0 0 0 / 0.9)";
+      context.shadowBlur = 24;
+      context.shadowOffsetY = 5;
+      context.textBaseline = "alphabetic";
+      for (const line of lines) {
+        context.fillText(line, horizontalPadding, y, maxWidth);
+        y += lineHeight;
+      }
+
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) throw new Error("Your browser couldn't create the download.");
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = "starpost.png";
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1_000);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
       setBusy(null);
     }
   }
@@ -189,13 +289,14 @@ function Index() {
                     {copied ? "Copied!" : "Copy caption"}
                   </button>
                   {image && (
-                    <a
-                      href={image}
-                      download="starpost.png"
-                      className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent"
+                    <button
+                      type="button"
+                      disabled={!!busy}
+                      onClick={downloadImage}
+                      className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
                     >
-                      Download image
-                    </a>
+                      {busy === "download" ? "Preparing…" : "Download image"}
+                    </button>
                   )}
                   <button
                     disabled={!!busy}
