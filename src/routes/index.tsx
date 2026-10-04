@@ -199,6 +199,13 @@ function Index() {
                   )}
                   <button
                     disabled={!!busy}
+                    onClick={makeTitle}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
+                  >
+                    {busy === "title" ? "Rewriting…" : "New title"}
+                  </button>
+                  <button
+                    disabled={!!busy}
                     onClick={() => makeImage(post.imagePrompt)}
                     className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
                   >
