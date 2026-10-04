@@ -22,6 +22,7 @@ function Index() {
   const fetchNews = useServerFn(getNews);
   const genPost = useServerFn(generatePost);
   const genImage = useServerFn(generateImage);
+  const regenTitle = useServerFn(regenerateTitle);
   const news = useQuery({ queryKey: ["news"], queryFn: () => fetchNews(), staleTime: 600_000 });
 
   const [input, setInput] = useState("");
@@ -36,6 +37,20 @@ function Index() {
     try {
       const r = await genImage({ data: { prompt } });
       setImage(r.url);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function makeTitle() {
+    if (!post) return;
+    setBusy("title");
+    setError(null);
+    try {
+      const r = await regenTitle({ data: { title: post.title, caption: post.caption } });
+      setPost({ ...post, title: r.title });
     } catch (e) {
       setError((e as Error).message);
     } finally {
