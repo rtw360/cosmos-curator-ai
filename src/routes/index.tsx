@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { getNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
+import { fetchNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
 
 const DOWNLOAD_WIDTH = 1080;
 const DOWNLOAD_HEIGHT = 1350;
@@ -52,7 +52,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const fetchNews = useServerFn(getNews);
   const genPost = useServerFn(generatePost);
   const genImage = useServerFn(generateImage);
   const regenTitle = useServerFn(regenerateTitle);
