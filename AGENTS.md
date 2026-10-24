@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Compose downloadable post artwork in the browser so the saved PNG matches the title-over-image preview without storing generated files.
+- Fetch public RSS news through a same-origin TanStack server function using the isolated news helper; bounded per-source retries and partial results prevent one unavailable publisher from breaking the news list.
