@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Fix preview news loading and add bounded automatic retries per source
+- [x] Fix preview news loading and add bounded automatic retries per source — 6 tests passed; 20 articles loaded and refreshed in preview
 
 - [x] Add college news feeds (Harvard, MIT, UC Berkeley, Caltech, UW, Illinois) + Atom support
 - [x] Prioritize NASA and ESA articles at the top of the news list
