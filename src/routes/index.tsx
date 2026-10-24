@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { fetchNews, generatePost, generateImage, regenerateTitle, type Post } from "@/lib/posts.functions";
 
 const DOWNLOAD_WIDTH = 1080;
@@ -55,7 +56,8 @@ function Index() {
   const genPost = useServerFn(generatePost);
   const genImage = useServerFn(generateImage);
   const regenTitle = useServerFn(regenerateTitle);
-  const news = useQuery({ queryKey: ["news"], queryFn: () => fetchNews(), staleTime: 600_000 });
+  const getNews = useServerFn(fetchNews);
+  const news = useQuery({ queryKey: ["news"], queryFn: () => getNews(), staleTime: 600_000, retry: 2, retryDelay: (attempt) => Math.min(2000 * 2 ** attempt, 8000) });
 
   const [input, setInput] = useState("");
   const [post, setPost] = useState<Post | null>(null);
@@ -210,14 +212,16 @@ function Index() {
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-xs uppercase tracking-widest text-muted-foreground">Latest astronomy news</h2>
-              <button onClick={() => news.refetch()} className="text-xs text-primary hover:underline">
-                Refresh
-              </button>
+              <Button variant="link" size="sm" onClick={() => news.refetch()} disabled={news.isFetching}>
+                {news.isFetching ? "Refreshing…" : "Refresh"}
+              </Button>
             </div>
             {news.isLoading && <p className="text-sm text-muted-foreground">Scanning the skies…</p>}
-            {news.isError && <p className="text-sm text-destructive">Couldn't load news feeds.</p>}
+            {news.isError && <p role="alert" className="text-sm text-destructive">Couldn't reach the news feed after retrying. Please try Refresh.</p>}
+            {news.data?.unavailableSources.length ? <p role="status" className="mb-3 text-sm text-muted-foreground">Temporarily unavailable: {news.data.unavailableSources.join(", ")}. Other sources are still shown.</p> : null}
+            {news.data && news.data.items.length === 0 && <p role="status" className="mb-3 text-sm text-muted-foreground">No articles are available right now. Please try Refresh shortly.</p>}
             <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-              {news.data?.map((n) => (
+              {news.data?.items.map((n) => (
                 <li key={n.link} className="flex gap-4 p-4">
                   <div className="min-w-0 flex-1">
                     <p className="text-[11px] uppercase tracking-wider text-primary">{n.source}</p>

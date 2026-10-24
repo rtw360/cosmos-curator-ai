@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { loadNews } from "./news";
 
 const GW = "https://ai.gateway.lovable.dev";
 
@@ -18,19 +19,9 @@ function strip(html: string) {
     .trim();
 }
 
-export type NewsItem = { title: string; link: string; summary: string; source: string; date: string };
+export type { NewsItem } from "./news";
 
-export async function fetchNews(): Promise<NewsItem[]> {
-  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-news`;
-  const headers = {
-    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-  };
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`News request failed (${res.status})`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data as NewsItem[];
-}
+export const fetchNews = createServerFn({ method: "GET" }).handler(async () => loadNews());
 
 async function articleText(input: string) {
   const trimmed = input.trim();
